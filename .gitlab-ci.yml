@@ -1,0 +1,258 @@
+stages:
+  - build
+  - deploy
+  - unit-test
+  - integration-test
+
+# Include file for gitlab-ci-templates project
+include:
+  #Generic and global variables
+  - https://venom.cedemo.com/api/v4/projects/94/repository/files/generic%2Fcommon_global_variables.yaml/raw?ref=master&private_token=25_ktWfe56vw5FpeWAop&bug=bug.yaml
+
+  # Unit Test
+  - https://venom.cedemo.com/api/v4/projects/94/repository/files/generic%2Fcodequality_test.yaml/raw?ref=master&private_token=25_ktWfe56vw5FpeWAop&bug=bug.yaml
+
+  # Generic Integration Test
+  - https://venom.cedemo.com/api/v4/projects/94/repository/files/generic%2Fgeneric_integration_test.yaml/raw?ref=master&private_token=25_ktWfe56vw5FpeWAop&bug=bug.yaml
+
+  # Selenium tests
+  - https://venom.cedemo.com/api/v4/projects/94/repository/files/generic%2Fselenium_tests.yaml/raw?ref=master&private_token=25_ktWfe56vw5FpeWAop&bug=bug.yaml
+
+build_catalog_dev:
+  stage: build
+  variables:
+    DOCKER_DRIVER: "overlay"
+    REACT_APP_DOMAIN: "https://pro2-dev.cedemo.com"
+    REACT_APP_ENV_COLOR: "green"
+    REACT_APP_ENV_NAME: "dev"
+    REACT_APP_CI_ANALYTICS_TEST_MODE: "true"
+    REACT_APP_CI_FAVICON: "favicon_dev.ico"
+  only:
+    changes:
+      - packages/cdm-shared/**/*
+      - packages/cdm-web-catalog/**/*
+    refs:
+      - dev
+  before_script:
+    - docker version
+    - docker info
+  script:
+    - echo "$CI_PIPELINE_ID $CI_PROJECT_PATH_SLUG $CI_COMMIT_REF_NAME $CI_COMMIT_SHA $CI_PROJECT_NAME"
+    - echo "${CI_REGISTRY_PASSWORD}"|docker login ${CI_REGISTRY2} -u ${CI_REGISTRY_LOGIN} --password-stdin
+    - docker build --build-arg assembly_version=$CI_PIPELINE_ID --build-arg REACT_APP_CI_ANALYTICS_TEST_MODE=$REACT_APP_CI_ANALYTICS_TEST_MODE --build-arg REACT_APP_CI_FAVICON=$REACT_APP_CI_FAVICON -t ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME} --pull -f Dockerfile.catalog .
+    - docker tag ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME} ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID
+    - docker push ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID
+    - docker push ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME}
+
+deploy_catalog_dev:
+  stage: deploy
+  only:
+    changes:
+      - packages/cdm-shared/**/*
+      - packages/cdm-web-catalog/**/*
+    refs:
+      - dev
+  environment: $CI_COMMIT_REF_NAME
+  script:
+    - echo "AFTER $CI_PIPELINE_ID $CI_PROJECT_PATH_SLUG $CI_COMMIT_REF_NAME $CI_COMMIT_SHA"
+    - ssh -l centos -o ProxyCommand='ssh centos@$DEPLOYMENT_SERVER_IP_M_DEV0 -W %h:%p' m-dev-swarmmanager-d0 sudo -i "/root/stacks/update.sh pf2_${CI_PROJECT_PATH_SLUG}-catalog ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID"
+
+build_cms_dev:
+  stage: build
+  variables:
+    DOCKER_DRIVER: "overlay"
+    REACT_APP_DOMAIN: "https://cms2-dev.cedemo.com"
+    REACT_APP_DOMAIN_CMS: "https://cms-dev.cedemo.com"
+    REACT_APP_ENV_COLOR: "green"
+    REACT_APP_ENV_NAME: "dev"
+    REACT_APP_CI_ANALYTICS_TEST_MODE: "true"
+    REACT_APP_CI_FAVICON: "favicon_dev.ico"
+  only:
+    changes:
+      - packages/cdm-shared/**/*
+      - packages/cdm-web-cms/**/*
+    refs:
+      - dev
+  before_script:
+    - docker version
+    - docker info
+  script:
+    - echo "$CI_PIPELINE_ID $CI_PROJECT_PATH_SLUG $CI_COMMIT_REF_NAME $CI_COMMIT_SHA $CI_PROJECT_NAME"
+    - echo "${CI_REGISTRY_PASSWORD}"|docker login ${CI_REGISTRY2} -u ${CI_REGISTRY_LOGIN} --password-stdin
+    - docker build --build-arg assembly_version=$CI_PIPELINE_ID --build-arg REACT_APP_DOMAIN_CMS=$REACT_APP_DOMAIN_CMS --build-arg REACT_APP_CI_ANALYTICS_TEST_MODE=$REACT_APP_CI_ANALYTICS_TEST_MODE --build-arg REACT_APP_CI_FAVICON=$REACT_APP_CI_FAVICON -t ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME} --pull -f Dockerfile.cms .
+    - docker tag ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME} ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID
+    - docker push ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID
+    - docker push ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME}
+
+deploy_cms_dev:
+  stage: deploy
+  only:
+    changes:
+      - packages/cdm-shared/**/*
+      - packages/cdm-web-cms/**/*
+    refs:
+      - dev
+  environment: $CI_COMMIT_REF_NAME
+  script:
+    - echo "AFTER $CI_PIPELINE_ID $CI_PROJECT_PATH_SLUG $CI_COMMIT_REF_NAME $CI_COMMIT_SHA"
+    - ssh -l centos -o ProxyCommand='ssh centos@$DEPLOYMENT_SERVER_IP_M_DEV0 -W %h:%p' m-dev-swarmmanager-d0 sudo -i "/root/stacks/update.sh pf2_${CI_PROJECT_PATH_SLUG}-cms ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID"
+
+build_catalog_test:
+  stage: build
+  variables:
+    DOCKER_DRIVER: "overlay"
+    REACT_APP_DOMAIN: "https://pro2-test.cedemo.com"
+    REACT_APP_ENV_COLOR: "green"
+    REACT_APP_ENV_NAME: "test"
+    REACT_APP_CI_ANALYTICS_TEST_MODE: "true"
+    REACT_APP_CI_FAVICON: "favicon_test.ico"
+  only:
+    changes:
+      - packages/cdm-shared/**/*
+      - packages/cdm-web-catalog/**/*
+    refs:
+      - test
+  before_script:
+    - docker version
+    - docker info
+  script:
+    - echo "$CI_PIPELINE_ID $CI_PROJECT_PATH_SLUG $CI_COMMIT_REF_NAME $CI_COMMIT_SHA $CI_PROJECT_NAME"
+    - echo "${CI_REGISTRY_PASSWORD}"|docker login ${CI_REGISTRY2} -u ${CI_REGISTRY_LOGIN} --password-stdin
+    - docker build --build-arg assembly_version=$CI_PIPELINE_ID --build-arg REACT_APP_CI_ANALYTICS_TEST_MODE=$REACT_APP_CI_ANALYTICS_TEST_MODE --build-arg REACT_APP_CI_FAVICON=$REACT_APP_CI_FAVICON -t ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME} --pull -f Dockerfile.catalog .
+    - docker tag ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME} ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID
+    - docker push ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID
+    - docker push ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME}
+
+deploy_catalog_test:
+  stage: deploy
+  only:
+    changes:
+      - packages/cdm-shared/**/*
+      - packages/cdm-web-catalog/**/*
+    refs:
+      - test
+  environment: $CI_COMMIT_REF_NAME
+  script:
+    - echo "AFTER $CI_PIPELINE_ID $CI_PROJECT_PATH_SLUG $CI_COMMIT_REF_NAME $CI_COMMIT_SHA"
+    - ssh -l centos -o ProxyCommand='ssh centos@$DEPLOYMENT_SERVER_IP_O_TEST1 -W %h:%p' o-test1-swarmmanager-t0 sudo -i "/root/stacks/update.sh pf2_${CI_PROJECT_PATH_SLUG}-catalog ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID"
+
+build_cms_test:
+  stage: build
+  variables:
+    DOCKER_DRIVER: "overlay"
+    REACT_APP_DOMAIN: "https://cms2-test.cedemo.com"
+    REACT_APP_DOMAIN_CMS: "https://cms-test.cedemo.com"
+    REACT_APP_ENV_COLOR: "green"
+    REACT_APP_ENV_NAME: "test"
+    REACT_APP_CI_ANALYTICS_TEST_MODE: "true"
+    REACT_APP_CI_FAVICON: "favicon_test.ico"
+  only:
+    changes:
+      - packages/cdm-shared/**/*
+      - packages/cdm-web-cms/**/*
+    refs:
+      - test
+  before_script:
+    - docker version
+    - docker info
+  script:
+    - echo "$CI_PIPELINE_ID $CI_PROJECT_PATH_SLUG $CI_COMMIT_REF_NAME $CI_COMMIT_SHA $CI_PROJECT_NAME"
+    - echo "${CI_REGISTRY_PASSWORD}"|docker login ${CI_REGISTRY2} -u ${CI_REGISTRY_LOGIN} --password-stdin
+    - docker build --build-arg assembly_version=$CI_PIPELINE_ID --build-arg REACT_APP_DOMAIN_CMS=$REACT_APP_DOMAIN_CMS --build-arg REACT_APP_CI_ANALYTICS_TEST_MODE=$REACT_APP_CI_ANALYTICS_TEST_MODE --build-arg REACT_APP_CI_FAVICON=$REACT_APP_CI_FAVICON -t ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME} --pull -f Dockerfile.cms .
+    - docker tag ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME} ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID
+    - docker push ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID
+    - docker push ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME}
+
+deploy_cms_test:
+  stage: deploy
+  only:
+    changes:
+      - packages/cdm-shared/**/*
+      - packages/cdm-web-cms/**/*
+    refs:
+      - test
+  environment: $CI_COMMIT_REF_NAME
+  script:
+    - echo "AFTER $CI_PIPELINE_ID $CI_PROJECT_PATH_SLUG $CI_COMMIT_REF_NAME $CI_COMMIT_SHA"
+    - ssh -l centos -o ProxyCommand='ssh centos@$DEPLOYMENT_SERVER_IP_O_TEST1 -W %h:%p' o-test1-swarmmanager-t0 sudo -i "/root/stacks/update.sh pf2_${CI_PROJECT_PATH_SLUG}-cms ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID"
+
+build_catalog_prod:
+  stage: build
+  variables:
+    DOCKER_DRIVER: "overlay"
+    REACT_APP_DOMAIN: "https://pro2.cedemo.com"
+    REACT_APP_ENV_COLOR: "red"
+    REACT_APP_ENV_NAME: "prod"
+    REACT_APP_CI_ANALYTICS_TEST_MODE: "false"
+    REACT_APP_CI_FAVICON: "favicon.ico"
+  only:
+    changes:
+      - packages/cdm-shared/**/*
+      - packages/cdm-web-catalog/**/*
+    refs:
+      - master
+  before_script:
+    - docker version
+    - docker info
+  script:
+    - echo "$CI_PIPELINE_ID $CI_PROJECT_PATH_SLUG $CI_COMMIT_REF_NAME $CI_COMMIT_SHA $CI_PROJECT_NAME"
+    - echo "${CI_REGISTRY_PASSWORD}"|docker login ${CI_REGISTRY2} -u ${CI_REGISTRY_LOGIN} --password-stdin
+    - docker build --build-arg assembly_version=$CI_PIPELINE_ID --build-arg REACT_APP_CI_ANALYTICS_TEST_MODE=$REACT_APP_CI_ANALYTICS_TEST_MODE --build-arg REACT_APP_CI_FAVICON=$REACT_APP_CI_FAVICON -t ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME} --pull -f Dockerfile.catalog .
+    - docker tag ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME} ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID
+    - docker push ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID
+    - docker push ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME}
+
+deploy_catalog_prod:
+  stage: deploy
+  only:
+    changes:
+      - packages/cdm-shared/**/*
+      - packages/cdm-web-catalog/**/*
+    refs:
+      - master
+  environment: $CI_COMMIT_REF_NAME
+  when: manual
+  script:
+    - echo "AFTER $CI_PIPELINE_ID $CI_PROJECT_PATH_SLUG $CI_COMMIT_REF_NAME $CI_COMMIT_SHA"
+    - ssh -l centos -o ProxyCommand='ssh centos@$DEPLOYMENT_SERVER_IP_PROD_IAAS -W %h:%p' m-prod0-swarmmanager-p0 sudo -i "/root/stacks/update.sh pf2_${CI_PROJECT_PATH_SLUG}-catalog ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-catalog:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID"
+
+build_cms_prod:
+  stage: build
+  variables:
+    DOCKER_DRIVER: "overlay"
+    REACT_APP_DOMAIN: "https://cms2.cedemo.com"
+    REACT_APP_DOMAIN_CMS: "https://cms.cedemo.com"
+    REACT_APP_ENV_COLOR: "red"
+    REACT_APP_ENV_NAME: "prod"
+    REACT_APP_CI_ANALYTICS_TEST_MODE: "false"
+    REACT_APP_CI_FAVICON: "favicon.ico"
+  only:
+    changes:
+      - packages/cdm-shared/**/*
+      - packages/cdm-web-cms/**/*
+    refs:
+      - master
+  before_script:
+    - docker version
+    - docker info
+  script:
+    - echo "$CI_PIPELINE_ID $CI_PROJECT_PATH_SLUG $CI_COMMIT_REF_NAME $CI_COMMIT_SHA $CI_PROJECT_NAME"
+    - echo "${CI_REGISTRY_PASSWORD}"|docker login ${CI_REGISTRY2} -u ${CI_REGISTRY_LOGIN} --password-stdin
+    - docker build --build-arg assembly_version=$CI_PIPELINE_ID --build-arg REACT_APP_DOMAIN_CMS=$REACT_APP_DOMAIN_CMS --build-arg REACT_APP_CI_ANALYTICS_TEST_MODE=$REACT_APP_CI_ANALYTICS_TEST_MODE --build-arg REACT_APP_CI_FAVICON=$REACT_APP_CI_FAVICON -t ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME} --pull -f Dockerfile.cms .
+    - docker tag ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME} ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID
+    - docker push ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID
+    - docker push ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME}
+
+deploy_cms_prod:
+  stage: deploy
+  only:
+    changes:
+      - packages/cdm-shared/**/*
+      - packages/cdm-web-cms/**/*
+    refs:
+      - master
+  environment: $CI_COMMIT_REF_NAME
+  when: manual
+  script:
+    - echo "AFTER $CI_PIPELINE_ID $CI_PROJECT_PATH_SLUG $CI_COMMIT_REF_NAME $CI_COMMIT_SHA"
+    - ssh -l centos -o ProxyCommand='ssh centos@$DEPLOYMENT_SERVER_IP_PROD_IAAS -W %h:%p' m-prod0-swarmmanager-p0 sudo -i "/root/stacks/update.sh pf2_${CI_PROJECT_PATH_SLUG}-cms ${CI_REGISTRY2}/${CI_PROJECT_PATH_SLUG}-cms:${CI_COMMIT_REF_NAME}-$CI_PIPELINE_ID"

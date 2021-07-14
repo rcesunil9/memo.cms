@@ -1,0 +1,22 @@
+FROM alpine:3.4 AS base
+WORKDIR /build
+
+FROM node:12.11.1 AS build
+WORKDIR /
+ARG REACT_APP_DOMAIN
+ARG REACT_APP_CI_ANALYTICS_TEST_MODE
+ENV REACT_APP_CI_ANALYTICS_TEST_MODE=$REACT_APP_CI_ANALYTICS_TEST_MODE
+ARG REACT_APP_CI_FAVICON
+ENV REACT_APP_CI_FAVICON=$REACT_APP_CI_FAVICON
+COPY . .
+# RUN yarn config set registry https://registry.npmjs.org/
+RUN yarn install
+RUN yarn workspace cdm-web-catalog build
+
+FROM base AS final
+RUN apk add --update nginx && rm -rf /var/cache/apk/*
+ADD packages/cdm-web-catalog/nginx.conf /etc/nginx/nginx.conf
+RUN mkdir /www-data
+COPY --from=build packages/cdm-web-catalog/build /www-data
+EXPOSE 80
+CMD ["nginx"]

@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "cdmupgrade": "yarn workspace cdm-shared add cdm-ui-components && yarn workspace cdm-web-cms add cdm-ui-components && yarn workspace cdm-web-catalog add cdm-ui-components && yarn install",
+    "catalog": "yarn workspace cdm-web-catalog start",
+    "cms": "yarn workspace cdm-web-cms start",
+    "start": "concurrently --kill-others-on-fail \"yarn catalog\" \"yarn cms\""
+  },
+  "dependencies": {
+    "concurrently": "^5.1.0"
+  }
+}
