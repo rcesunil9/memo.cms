@@ -1,0 +1,16 @@
+{
+  "header": {
+    "nav": {
+      "home": "Home",
+      "catalog": "Catalog",
+      "videos": "Videos",
+      "stats": "Statistics",
+      "doc": "Documentation"
+    },
+    "topbar": {
+      "notifications": "Notifications",
+      "account": "My account",
+      "logout": "Log out"
+    }
+  }
+}

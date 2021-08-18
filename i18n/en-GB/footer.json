@@ -1,0 +1,14 @@
+{
+  "footer": {
+    "header1": "Our site",
+    "home": "Home",
+    "loot": "Licensed products",
+    "header2": "Parameters",
+    "logout": "Logout",
+    "header3": "Contact",
+    "address": "41, Avenue Hector Otto",
+    "city": "98000 Monaco MC",
+    "email": "<a href=\"mailto:info@cedemo.com\">info@cedemo.com</a>",
+    "phone": "+377 97 98 41 60"
+  }
+}

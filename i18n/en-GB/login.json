@@ -1,0 +1,9 @@
+{
+  "login":{
+    "loginToAccount" : "Login to Cedemo CMS",
+    "email": "Email address",
+    "password": "Password",
+    "forgotPassword": "Forgot your password",
+    "login": "Login"
+  }
+}

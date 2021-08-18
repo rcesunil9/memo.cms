@@ -1,0 +1,31 @@
+{
+  "catalog": {
+    "banner": {
+      "title": "Licensed products",
+      "homeLinkTitle": "Home",
+      "catalogLinkTitle": "Catalog"
+    },
+    "autocomplete": {
+      "title": "Search"
+    },
+    "search": {
+      "title": "Search",
+      "quickSearch": "Quick search",
+      "quickSearchDescription": "Search by the name of the product, its EAN or manufacturer reference.",
+      "manufacturer": "Manufacturer",
+      "ean": "EAN",
+      "ref": "Manufacturer reference",
+      "submit": "Submit"
+    },
+    "products": {
+      "loadmore": "Load more",
+      "noresult": "No result",
+      "noresultphrase": "Try changing the filters or search term.",
+      "displayed_singular": "product displayed",
+      "found_singular": "product found",
+      "displayed": "product(s) displayed",
+      "found": "product(s) found",
+      "clearFilters": "Clear filters"
+    }
+  }
+}

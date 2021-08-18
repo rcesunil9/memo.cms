@@ -1,0 +1,51 @@
+{
+  "tradeitem": {
+    "banner": {
+      "homeLinkTitle": "Home",
+      "catalogLinkTitle": "Catalog"
+    },
+    "hero": {
+      "ean" : "GTIN",
+      "manufacturerReference" : "Manufacturer code",
+      "brand" : "Brand",
+      "licenses" : "License(s)",
+      "updateDate" : "Modification date",
+      "releaseDate" : "Release date",
+      "download" : "Download"
+    },
+    "marketing": {
+      "title" : "Marketing",
+      "descriptionAndPros": "Descriptions and features",
+      "codes": "Codes",
+      "gtin": "GTIN",
+      "manufacturerCode": "Manufacturer code",
+      "description" : "Description",
+      "audience" : "Audience",
+      "generalInformation": "General information",
+      "normsAndSafety": "Norms and safety",
+      "logistics": "Logistics",
+      "manufacturer": "Manufacturer",
+      "brand": "Brand",
+      "licenses": "License(s)",
+      "npd": "NPD category",
+      "mainMaterial": "Main material",
+      "languagesAvailable": "Languages available",
+      "numberOfPieces": "Number of piece(s)",
+      "packagingLanguages": "Packaging languages",
+      "dates": "Dates",
+      "releaseDate": "Release date",
+      "updatedAt": "Modification date",
+      "createdAt": "Creation date"
+    },
+    "images": {
+      "title":"Images",
+      "types":{
+        "all": "All",
+        "backBox": "Back Box",
+        "frontBox": "Front Box",
+        "toyInSituation" : "Toy in situation",
+        "others" : "Others"
+      }
+    }
+  }
+}

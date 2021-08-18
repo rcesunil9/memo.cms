@@ -1,0 +1,24 @@
+{
+  "home": {
+    "banner": {
+      "cardTitle": "CEDEMO PLATFORM",
+      "cardDescription" : "Cedemo provide information for thousands of products across different categories: <strong>video games</strong>, <strong>toys</strong>, <strong>licensed products</strong>, <strong>robotic</strong>.",
+      "cardButton": "Start browsing",
+      "videoLink": "https://www.youtube.com/embed/zeJ8ChVcMsc"
+    },
+    "categories": {
+      "title": "OUR CATEGORIES",
+      "loot": "LOOT",
+      "toys": "TOYS",
+      "vg": "VIDEO GAMES",
+      "lootImgLink": "assets/img/home_loot.png",
+      "toyImgLink": "assets/img/home_toy.png",
+      "vgImgLink": "assets/img/home_vg.jpg",
+      "goButton": "Let's go",
+      "comingSoonButton": "Coming soon..."
+    },
+    "affiliates": {
+    	"title": "THEY TRUST US"
+    }
+  }
+}
